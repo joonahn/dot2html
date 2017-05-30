@@ -32,13 +32,13 @@ def nodesToStr(nodelist):
 	return "[\n" + (",\n".join(nodeStrList)) + "]"
 
 def linksToStr(linklist):
-	map_fcn = lambda x: '\t["' + x["from"] + '","' + x["to"] + '",{"label":""}]'
+	map_fcn = lambda x: '\t{"source":"' + x["from"] + '","target":"' + x["to"] + '"}'
 	nodeStrList = list(map(map_fcn, linklist))
 	return "[\n" + (",\n".join(nodeStrList)) + "]"
 
 infilename = sys.argv[1]
 outfilename = os.path.splitext(infilename)[0] + '.html'
-templatename = "dagre-d3.html"
+templatename = "template.html"
 
 parsedData = parsedot(infilename)
 

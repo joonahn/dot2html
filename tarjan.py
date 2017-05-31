@@ -13,7 +13,8 @@ def parsedot(filename):
 		f.readline()
 		while True:
 			line = f.readline()
-			if not line: break
+			if not line: 
+				break
 			if re.match('.+(?=\[)', line) or re.match('(?<=\[).*(?=\])', line):
 				id_info = re.findall('.+(?=\[)', line)[0].strip()
 				meta_info = re.findall('(?<=\[).*(?=\])', line)[0].strip()
@@ -26,9 +27,9 @@ def parsedot(filename):
 					outdict["links"].append({"from":from_info, "to":to_info})
 	return outdict
 
-def getVertexWithID(id, vertices):
+def getVertexWithID(_id, vertices):
 	for vertex in vertices:
-		if vertex["id"] == id:
+		if vertex["id"] == _id:
 			return vertex
 	raise  Exception("No such vertex exists!")
 
@@ -51,12 +52,14 @@ def computeSCCs(graph):
 	pop = stack.pop
 
 	for vertex in vertices:
-		if not "index" in vertex:
-			scc, index = computeSCC(vertex, graph, push, pop, index)
-			if len(scc) != 0:
-				sccs.append(scc)
+		if not ("index" in vertex):
+			newsccs, index = computeSCC(vertex, graph, push, pop, index)
+			sccs  = sccs + newsccs
+
+	return sccs
 
 def computeSCC(vertex, graph, push, pop, index):
+	sccs = []
 	vertices = graph["nodes"] # ["id"]
 	edges = graph["links"] # ["from"] ["to"]	
 	vertex["index"] = index
@@ -67,24 +70,23 @@ def computeSCC(vertex, graph, push, pop, index):
 
 	for w in findNeibors(vertex, graph):
 		if not "index" in w:
-			computeSCC(w, graph, push, pop, index)
+			newsccs, index = computeSCC(w, graph, push, pop, index)
+			sccs = sccs + newsccs
 			vertex["lowlink"] = min([vertex["lowlink"], w["lowlink"]])
 		elif w["onstack"]:
 			vertex["lowlink"] = min([vertex["lowlink"], w["index"]])
 
-	scc = []
 	if vertex["lowlink"] == vertex["index"]:
+		scc = []
 		while True:
 			w = pop()
 			w["onstack"] = False
 			scc.append(w)
 			if w["id"] == vertex["id"]:
 				break
-
-	return scc, index
-
-
-
+		if len(scc) != 0:
+			sccs.append(scc)
+	return sccs, index
 
 def nodesToStr(nodelist):
 	map_fcn = lambda x: '\t{"id":"' + x["id"] + '","label":"' + x["label"] + '"}'
@@ -97,23 +99,15 @@ def linksToStr(linklist):
 	return "[\n" + (",\n".join(nodeStrList)) + "]"
 
 infilename = sys.argv[1]
-outfilename = os.path.splitext(infilename)[0] + '.html'
-templatename = "dagre-d3.html"
 
 parsedData = parsedot(infilename)
 
-with open (outfilename, 'w') as f:
-	with open (templatename, 'r') as tp:
-		while True:
-			line = tp.readline()
-			if not line: break
-			if "####" in line:
-				nodeStr = nodesToStr(parsedData["nodes"])
-				linkStr = linksToStr(parsedData["links"])
-				f.write("var nodes = ")
-				f.write(nodeStr + "\n")
-				f.write(",\n links = ")
-				f.write(linkStr + ";\n")
-			else:
-				f.write(line)
+sccs = computeSCCs(parsedData)
+
+for scc in sccs:
+	print "newscc:",
+	for node in scc:
+		print node["id"] + ", ",
+	print ""
+
 

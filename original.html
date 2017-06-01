@@ -1,7 +1,6 @@
 <html>
 <script src="./dagre-d3.js"></script>
 <script src="https://d3js.org/d3.v3.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.min.js"></script>
 <style>
 
 body {
@@ -120,9 +119,9 @@ var nodes = [
 	{"id":"89","label":"<89>:   br label %for.inc8"},
 	{"id":"90","label":"<90>:   %19 = load i32, i32* %i, align 4"},
 	{"id":"91","label":"<91>:   %20 = load %struct._IO_FILE*, %struct._IO_FILE** @stderr, align 8"},
-	{"id":"92","label":"<92>:   ret void"}]
-,
- links = [
+	{"id":"92","label":"<92>:   ret void"}];
+
+var links = [
 	["0","1",{"label":""}],
 	["1","2",{"label":""}],
 	["2","3",{"label":""}],
@@ -232,35 +231,17 @@ var nodes = [
 	["88","82",{"label":""}],
 	["89","90",{"label":""}],
 	["90","80",{"label":""}],
-	["91","92",{"label":""}]]
-,
- SCClist = {"scc0":["90","89","88","87","86","85","84","83","82","81","80"],
-"scc1":["77","76","75","74","73","72","71","70","69","68","67"],
-"scc2":["65","64","63","62","61","60","59","58","57","56","55"],
-"scc3":["52","51","50","49","48","47","46"],
-"scc4":["44","43","42","41","40","39","38"],
-"scc5":["36","35","34","33","32","31","30"],
-"scc6":["28","27","26","25","24","23","22"]};
+	["91","92",{"label":""}]];
 
+var SCClist = {"scc0":["24","25","26"], "scc1":["71","72","73"]};
 var appliedSCC = [];
-var SCCcolor = {};
 
 // Automatically label each of the nodes
 var g = new dagreD3.graphlib.Graph().setGraph({});
+
 var idx = 255;
 var svg = d3.select("svg"),
     inner = svg.select("g");
-
-function generateRandomColor() {
-	var rc = randomColor({luminosity: 'light',count: (Object.keys(SCClist).length)});
-	var i = 0;
-	for (var key in SCClist) {
-		if (SCClist.hasOwnProperty(key)) {
-			SCCcolor[key] = rc[i];
-			i++;
-		}
-	}
-}
 
 function deleteLinks(node, deletedlinks) {
 	g.edges().forEach(function(e) {
@@ -369,17 +350,6 @@ function redraw_graph(render) {
         var node = g.node(v);
         // Round the corners of the nodes
         node.rx = node.ry = 5;
-
-        if (isCollapsable(v))
-        {
-        	node.style = "fill:" + SCCcolor[getsccID(v)] + ";";
-        }
-
-        else if (v.includes("scc"))
-        {
-        	node.style = "fill:" + SCCcolor[v] + ";";
-        }
-
       });
 
       render(inner, g);  
@@ -418,11 +388,6 @@ function render_graph(render) {
         var node = g.node(v);
         // Round the corners of the nodes
         node.rx = node.ry = 5;
-        // Color each nodes
-        if (isCollapsable(v))
-        {
-        	node.style = "fill:" + SCCcolor[getsccID(v)] + ";";
-        }
       });
 
       render(inner, g);  
@@ -449,7 +414,7 @@ svg.call(zoom);
 
 // Create the renderer
 var render = new dagreD3.render();
-generateRandomColor();
+
 render_graph(render);
 
 // Run the renderer. This is what draws the final graph.

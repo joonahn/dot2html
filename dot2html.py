@@ -15,13 +15,13 @@ def parsedot(filename):
 			line = f.readline()
 			if not line: 
 				break
-			if re.match('.+(?=\[)', line) or re.match('(?<=\[).*(?=\])', line):
-				id_info = re.findall('.+(?=\[)', line)[0].strip()
+			if bool(re.match('^[^\[\n]+(?=\[)', line)) or bool(re.match('(?<=\[).*(?=\])', line)):
+				id_info = re.findall('^[^\[\n]+(?=\[)', line)[0].strip()
 				meta_info = re.findall('(?<=\[).*(?=\])', line)[0].strip()
-				if re.match('^\d+$', id_info):
+				if bool(re.match('^\d+$', id_info)):
 					label_info = re.findall('(?<=").*(?=")', meta_info)[0]
 					outdict["nodes"].append({"id":id_info, "label":label_info})
-				elif re.match('\d+\s*->\s*\d+', id_info):
+				elif bool(re.match('\d+\s*->\s*\d+', id_info)):
 					from_info = re.findall("\d+\s*(?=->)", id_info)[0].strip()
 					to_info = re.findall("(?<=->)\s*\d+", id_info)[0].strip()
 					outdict["links"].append({"from":from_info, "to":to_info})
@@ -31,6 +31,7 @@ def getVertexWithID(_id, vertices):
 	for vertex in vertices:
 		if vertex["id"] == _id:
 			return vertex
+	print _id
 	raise  Exception("No such vertex exists!")
 
 def findNeibors(vertex, graph):

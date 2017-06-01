@@ -6,3 +6,4 @@ Type this at dot2html root folder:
 ```
 $ python dot2html YOUR_DOT_FILE.dot
 ```
+and it will generate YOUR_DOT_FILE.html. Enjoy it!
